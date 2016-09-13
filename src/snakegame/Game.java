@@ -43,39 +43,47 @@ public class Game {
     private int widthBlocks,heightBlocks;
     private int blockSpace;
     private int windowHeight, windowWidth;
+    private int appleCount;
+    private long startTime;
     private double maxSnakeSize;
     private Frame mainFrame;
-    private Panel gamePanel;
-    private Dialog gameOverDialog;
+    private Panel gamePanel, scorePanel;
+    private Label scoreLabel;
     private Color backgroundColor, snakeColor, appleColor;
     private ArrayList<Rectangle> snake;
     private Rectangle apple;
     private Direction snakeDirection;
     private void init(){
+        startTime = System.currentTimeMillis();
+        appleCount = 0;
         maxSnakeSize = 1;
         blockSize = 15;
-        blockSpace = 1;
+        blockSpace = 6;
         widthBlocks = 30;
-        heightBlocks = 30;
+        heightBlocks = 20;
         backgroundColor = Color.BLACK;
         snakeColor = Color.GREEN;
         appleColor = Color.RED;
         snakeDirection = Direction.center;
-        snake = new ArrayList<Rectangle>();
+        snake = new ArrayList();
         snake.add(createGameRectangle(widthBlocks / 2, heightBlocks / 2));
         generateApple();
     }
     private void createWindow() {        
-        mainFrame = new Frame("SnakeGame");
+        mainFrame = new Frame("Snake Game");
         gamePanel = new Panel();
-        gameOverDialog = new Dialog(mainFrame);
-        
-        gameOverDialog.setBackground(Color.gray);
-        gameOverDialog.setLayout(new BorderLayout());
-        gameOverDialog.add(new Button("Close"));
+        scorePanel = new Panel();
+        scoreLabel = new Label();
         
         gamePanel.setPreferredSize(new Dimension(windowWidth, windowHeight));
         gamePanel.setBackground(backgroundColor);
+        
+        //Create the score panel
+        scorePanel.setPreferredSize(new Dimension(windowWidth, 30));
+        scorePanel.setBackground(Color.WHITE);
+        scoreLabel.setAlignment(Label.CENTER);
+        scoreLabel.setText(getScore());
+        scorePanel.add(scoreLabel);
         
         mainFrame.addKeyListener(new KeyAdapter() {
             @Override
@@ -105,6 +113,7 @@ public class Game {
         });
         mainFrame.setLayout(new BorderLayout());
         mainFrame.add(gamePanel, BorderLayout.CENTER);
+        mainFrame.add(scorePanel, BorderLayout.SOUTH);
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -159,10 +168,13 @@ public class Game {
         Graphics g = gamePanel.getGraphics();
         Graphics2D g2 = (Graphics2D)g;
         
-        g2.clearRect(0,0,windowWidth,windowHeight);
+        g2.clearRect(0, 0, gamePanel.getWidth(), gamePanel.getHeight());
+        
         drawApple();
         drawSnake();
         
+        //Update score
+        scoreLabel.setText(getScore());        
     }
     private Rectangle createGameRectangle(int x, int y) {
         Rectangle rect = new Rectangle();
@@ -210,6 +222,7 @@ public class Game {
             generateApple();
             maxSnakeSize += 3 + maxSnakeSize * 0.1;
             System.out.println(maxSnakeSize);
+            appleCount++;
         }
         
         //Remove snake parts if snake is max size
@@ -244,6 +257,14 @@ public class Game {
         }
         
         return false;
+    }
+    
+    private String getScore(){
+        if(snakeDirection == Direction.center) startTime = System.currentTimeMillis();
+        
+        return "Time: " + (int)((System.currentTimeMillis() - startTime) / 1000) + "    " +
+                "Size: " + snake.size() + "    " + 
+                "Score: " + appleCount; 
     }
 }
 
